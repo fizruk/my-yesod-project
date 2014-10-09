@@ -1,12 +1,44 @@
 User
-    ident Text
-    password Text Maybe
+    ident             Text
+    linkedAccount     UserAccountId Maybe
+    authPlugin        Text
     UniqueUser ident
     deriving Typeable
-Email
-    email Text
-    user UserId Maybe
-    verkey Text Maybe
-    UniqueEmail email
+
+UserAccount
+    username          Text
+    password          ByteString
+    emailAddress      Text
+    verified          Bool
+    verifyKey         Text
+    resetPasswordKey  Text
+    UniqueUserAccount username
+    deriving Show
+
+Repository json
+    ident         Text
+    type          RepositoryType
+
+Section json
+    name          Text
+    shortDesc     Text Maybe
+    fullDesc      Text Maybe
+    theory        Text Maybe
+    parent        SectionId Maybe
+    config        ConfigId Maybe
+    sourceRepo    RepositoryId Maybe
+
+Task json
+    name          Text
+    shortDesc     Text Maybe
+    fullDesc      Text
+    config        ConfigId Maybe
+
+Config json
+    openFrom      UTCTime Maybe
+    openTo        UTCTime Maybe
+    maxAttempts   Int Maybe
+    minInterval   Int Maybe
+
 
  -- By default this file is used in Model.hs (which is imported by Foundation.hs)

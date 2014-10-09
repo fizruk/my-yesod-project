@@ -4,7 +4,8 @@ import Prelude
 import Yesod
 import Yesod.Static
 import Yesod.Auth
-import Yesod.Auth.BrowserId
+import Yesod.Auth.OAuth2.Github
+import Yesod.Auth.Account hiding (UserAccount)
 import Yesod.Default.Config
 import Yesod.Default.Util (addStaticContentExternal)
 import Network.HTTP.Client.Conduit (Manager, HasHttpManager (getHttpManager))
@@ -123,12 +124,22 @@ instance YesodPersist App where
 instance YesodPersistRunner App where
     getDBRunner = defaultGetDBRunner connPool
 
+instance PersistUserCredentials UserAccount where
+  userUsernameF       = UserAccountUsername
+  userPasswordHashF   = UserAccountPassword
+  userEmailF          = UserAccountEmailAddress
+  userEmailVerifiedF  = UserAccountVerified
+  userEmailVerifyKeyF = UserAccountVerifyKey
+  userResetPwdKeyF    = UserAccountResetPasswordKey
+  uniqueUsername      = UniqueUserAccount
+
+  userCreate name email key pwd = UserAccount name pwd email False key ""
+
 instance YesodAuth App where
     type AuthId App = UserId
 
-    -- Where to send a user after successful login
-    loginDest _ = HomeR
-    -- Where to send a user after logout
+
+    loginDest  _ = HomeR
     logoutDest _ = HomeR
 
     getAuthId creds = runDB $ do
@@ -136,15 +147,24 @@ instance YesodAuth App where
         case x of
             Just (Entity uid _) -> return $ Just uid
             Nothing -> do
-                fmap Just $ insert User
-                    { userIdent = credsIdent creds
-                    , userPassword = Nothing
-                    }
+              linkedAccount <- getBy $ UniqueUserAccount $ credsIdent creds
+              fmap Just $ insert User
+                  { userIdent         = credsIdent creds
+                  , userLinkedAccount = fmap entityKey linkedAccount
+                  , userAuthPlugin    = credsPlugin creds
+                  }
 
     -- You can add other plugins like BrowserID, email or OAuth here
-    authPlugins _ = [authBrowserId def]
+    authPlugins _ = [ accountPlugin
+                    , oauth2Github "a17214c4cae8302143c1" "d34c23b1aa28972465ea5156e480153d013ed8da"
+                    ]
 
     authHttpManager = httpManager
+
+instance AccountSendEmail App
+
+instance YesodAuthAccount (AccountPersistDB App UserAccount) App where
+    runAccountDB = runAccountPersistDB
 
 instance YesodAuthPersist App
 

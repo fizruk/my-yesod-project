@@ -6,3 +6,6 @@
 
 / HomeR GET POST
 /test TestR GET POST
+/sections/new NewSectionR POST
+/sections/list ListSectionsR GET
+/sections/list/#SectionId ListSubSectionsR GET
