@@ -10,3 +10,4 @@
 /sections/list ListSectionsR GET
 /sections/list/#SectionId ListSubSectionsR GET
 /task/#TaskId/submit SubmitR POST
+/submission/#SubmissionId TaskSubmissionR GET

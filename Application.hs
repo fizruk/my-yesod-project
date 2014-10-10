@@ -32,6 +32,7 @@ import Handler.NewSection
 import Handler.ListSections
 import Handler.ListSubSections
 import Handler.Submit
+import Handler.TaskSubmission
 
 -- This line actually creates our YesodDispatch instance. It is the second half
 -- of the call to mkYesodData which occurs in Foundation.hs. Please see the

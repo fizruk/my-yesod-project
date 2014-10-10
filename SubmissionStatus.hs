@@ -6,14 +6,16 @@ import Data.Aeson.TH
 
 data SubmissionStatus
   = SubmissionReceived
-  | SubmissionInvalid
-  | SubmissionCompilationError
+  | SubmissionStarted
+  | SubmissionMalformed
+  | SubmissionErroredTests
   | SubmissionFailedTests
+  | SubmissionAborted
   | SubmissionPassedTests
   | SubmissionInReview
   | SubmissionRejected
   | SubmissionAccepted
-  deriving (Eq, Show, Read)
+  deriving (Eq, Ord, Show, Read)
 
 deriveJSON defaultOptions ''SubmissionStatus
 
