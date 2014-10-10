@@ -27,6 +27,7 @@ Section json
     parent        SectionId Maybe
     config        ConfigId Maybe
     sourceRepo    RepositoryId Maybe
+    owner         UserId
 
 Task json
     name          Text
@@ -40,5 +41,10 @@ Config json
     maxAttempts   Int Maybe
     minInterval   Int Maybe
 
+Submission json
+    task          TaskId
+    sender        UserId
+    sentAt        UTCTime           default=CURRENT_TIMESTAMP
+    status        SubmissionStatus  default="SubmissionReceived"
 
  -- By default this file is used in Model.hs (which is imported by Foundation.hs)
