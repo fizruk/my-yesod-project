@@ -28,6 +28,7 @@ library
                      Handler.ListSubSections
                      Handler.Submit
                      Handler.TaskSubmission
+                     Handler.TestLogin
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT

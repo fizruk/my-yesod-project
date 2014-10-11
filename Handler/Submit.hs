@@ -11,6 +11,8 @@ import Control.Monad
 import System.Exit
 import System.LXC
 
+import Yesod.Auth
+
 import SubmissionStatus
 
 data SubmissionPayload = SubmissionPayload
@@ -71,6 +73,7 @@ checkSubmission submissionId Submission{..} = do
 
 postSubmitR :: TaskId -> Handler Value
 postSubmitR taskId = do
+  authId        <- requireAuth
   payload       <- requireJsonBody :: Handler SubmissionPayload
   submission    <- createSubmission payload
   submissionId  <- runDB $ insert submission
