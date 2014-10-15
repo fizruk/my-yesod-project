@@ -6,6 +6,6 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y lxc-dev
 install:
-  - cabal install --force-reinstalls alex happy aeson-0.7
+  - cabal install --force-reinstalls alex happy aeson-0.7.0.5
   - git clone https://github.com/fizruk/trass-lxc.git && cd trass-lxc && cabal install && cd ..
   - cabal install --only-dependencies --enable-tests
