@@ -17,7 +17,6 @@ import Control.Applicative
 import Settings.Development
 import Data.Default (def)
 import Text.Hamlet
-import System.LXC
 
 -- | Which Persistent backend this site is using.
 type PersistConf = SqliteConf
@@ -69,11 +68,9 @@ widgetFile = (if development then widgetFileReload
 data Extra = Extra
     { extraCopyright :: Text
     , extraAnalytics :: Maybe Text -- ^ Google Analytics
-    , extraLxcBase   :: Container  -- ^ Base LXC container
     } deriving Show
 
 parseExtra :: DefaultEnv -> Object -> Parser Extra
 parseExtra _ o = Extra
     <$> o .:  "copyright"
     <*> o .:? "analytics"
-    <*> (flip Container Nothing <$> o .:  "lxc-base")

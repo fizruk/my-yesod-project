@@ -3,7 +3,6 @@ Default: &defaults
   port: 3000
   approot: "http://ubuntu:3000"
   copyright: Insert copyright statement here
-  lxc-base: trass-base
   #analytics: UA-YOURCODE
 
 Development:
