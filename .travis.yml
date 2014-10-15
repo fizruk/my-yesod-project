@@ -7,4 +7,5 @@ before_install:
   - sudo apt-get install -y lxc-dev
 install:
   - cabal install --force-reinstalls alex happy
+  - git clone https://github.com/fizruk/trass-lxc.git && cd trass-lxc && cabal install && cd ..
   - cabal install --only-dependencies --enable-tests

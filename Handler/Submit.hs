@@ -2,18 +2,24 @@
 module Handler.Submit where
 
 import Import
-import Data.Aeson.TH
 import Data.Time
-import Data.Text (unpack)
 
-import Control.Concurrent
+import Data.Text (Text)
+import qualified Data.Text as Text
+
+import Data.Yaml
+
 import Control.Monad
 import System.Exit
-import System.LXC
 
 import Yesod.Auth
 
 import SubmissionStatus
+
+import Trass
+import Trass.Config
+import Trass.Config.Options
+import System.LXC
 
 data SubmissionPayload = SubmissionPayload
   { submissionPayloadSender :: UserId
@@ -47,39 +53,35 @@ setSubmissionStatus id status = runDB $ do
   when (currentStatus < status) $ do
     updateWhere [SubmissionId ==. id] [SubmissionStatus =. status]
 
-checkSubmission :: SubmissionId -> Submission -> Handler ()
-checkSubmission submissionId Submission{..} = do
-  let tmpName = unpack $ "submit-" <> toPathPiece submissionId
-  lxcBase   <- extraLxcBase <$> getExtra
-  Just tmp  <- withContainer lxcBase $ clone (Just tmpName) Nothing [CloneSnapshot] Nothing Nothing Nothing []
+checkSubmission :: SubmissionId -> Submission -> FilePath -> Handler ()
+checkSubmission submissionId Submission{..} submitFile = do
+  -- runInnerHandler <- handlerToIO
+  -- let checkpoint = runInnerHandler . setSubmissionStatus submissionId
 
-  runInnerHandler <- handlerToIO
-  let checkpoint status = do
-        liftIO $ threadDelay 2000000
-        runInnerHandler $ setSubmissionStatus submissionId status
-
-  withContainer tmp $ do
-    start False []
-    checkpoint SubmissionStarted
-    exitCode <- attachRunWait defaultAttachOptions "echo" ["echo", "Hello, world!"]
-    case exitCode of
-      Nothing           -> checkpoint SubmissionAborted
-      Just ExitSuccess  -> checkpoint SubmissionPassedTests
-      Just _            -> checkpoint SubmissionFailedTests
-    stop
-    destroy
+  liftIO $ do
+    Just cfg     <- decodeFile "/home/fizruk/trass-lxc/examples/.trass.yml"
+    Just section <- decodeFile "/home/fizruk/trass-lxc/examples/.section.yml"
+    let Right c = applyConfiguration cfg section
+    submit (Container "test-1" Nothing) submitFile ["/home/fizruk/trass-lxc/examples/common_task/", "/home/fizruk/trass-lxc/examples/task-1/"] c
 
   return ()
 
 postSubmitR :: TaskId -> Handler Value
 postSubmitR taskId = do
-  authId        <- requireAuth
-  payload       <- requireJsonBody :: Handler SubmissionPayload
-  submission    <- createSubmission payload
-  submissionId  <- runDB $ insert submission
+  authId  <- requireAuthId
+  mfile   <- lookupFile "filedata"
+  case mfile of
+    Nothing -> invalidArgs ["filedata"]
+    Just fileInfo -> do
+      let payload    = SubmissionPayload authId taskId
+          submitFile = "/home/fizruk/temp/submission.payload"
+      liftIO $ fileMove fileInfo submitFile
+      submission    <- createSubmission payload
+      submissionId  <- runDB $ insert submission
 
-  forkHandler
-    (\_ -> setSubmissionStatus submissionId SubmissionAborted)
-    (checkSubmission submissionId submission)
+      forkHandler
+        (\_ -> setSubmissionStatus submissionId SubmissionAborted)
+        (checkSubmission submissionId submission submitFile)
 
-  returnJson $ submissionId
+      returnJson $ submissionId
+

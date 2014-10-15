@@ -82,6 +82,7 @@ library
                  , wai-logger                    >= 2.2        && < 2.3
                  , time                          >= 1.4        && < 1.5
                  , lxc                           >= 0.3        && < 0.4
+                 , trass-lxc
 
     -- see https://github.com/yesodweb/yesod/issues/814
     if !os(windows)
