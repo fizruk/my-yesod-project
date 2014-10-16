@@ -24,6 +24,8 @@ import Network.Wai.Logger (clockDateCacher)
 import Data.Default (def)
 import Yesod.Core.Types (loggerSet, Logger (Logger))
 
+import qualified Data.Yaml as Yaml
+
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
 import Handler.Home
@@ -34,6 +36,8 @@ import Handler.ListSubSections
 import Handler.Submit
 import Handler.TaskSubmission
 import Handler.TestLogin
+import Handler.NewCourse
+import Handler.UpdateCourse
 
 -- This line actually creates our YesodDispatch instance. It is the second half
 -- of the call to mkYesodData which occurs in Foundation.hs. Please see the
@@ -76,6 +80,8 @@ makeFoundation conf = do
     loggerSet' <- newStdoutLoggerSet defaultBufSize
     (getter, _) <- clockDateCacher
 
+    trassConf <- withYamlEnvironment "config/trass.yml" (appEnv conf) parseJSON
+
     let logger = Yesod.Core.Types.Logger loggerSet' getter
         foundation = App
             { settings = conf
@@ -84,6 +90,7 @@ makeFoundation conf = do
             , httpManager = manager
             , persistConfig = dbconf
             , appLogger = logger
+            , trassConfig = trassConf
             }
 
     -- Perform database migration using our application's logging settings.

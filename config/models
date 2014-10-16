@@ -15,36 +15,31 @@ UserAccount
     UniqueUserAccount username
     deriving Show
 
-Repository json
-    ident         Text
-    type          RepositoryType
+Course json
+    rootSection   SectionId
+    sourceRepo    Text Maybe
 
-Section json
-    name          Text
-    shortDesc     Text Maybe
-    fullDesc      Text Maybe
+Section
+    path          FilePath
+    title         Text
+    summary       Text Maybe
+    overview      Text Maybe
     theory        Text Maybe
+    config        ByteString Maybe
+    course        CourseId
     parent        SectionId Maybe
-    config        ConfigId Maybe
-    sourceRepo    RepositoryId Maybe
-    owner         UserId
 
 Task json
-    name          Text
-    shortDesc     Text Maybe
-    fullDesc      Text
-    config        ConfigId Maybe
-
-Config json
-    openFrom      UTCTime Maybe
-    openTo        UTCTime Maybe
-    maxAttempts   Int Maybe
-    minInterval   Int Maybe
+    path          FilePath
+    title         Text
+    description   Text
+    section       SectionId
+    course        CourseId
 
 Submission json
     task          TaskId
     sender        UserId
-    sentAt        UTCTime           default=CURRENT_TIMESTAMP
-    status        SubmissionStatus  default="SubmissionReceived"
+    sentAt        UTCTime
+    status        SubmissionStatus
 
  -- By default this file is used in Model.hs (which is imported by Foundation.hs)

@@ -4,6 +4,7 @@ module Model where
 import Yesod
 import Data.Text (Text)
 import Data.ByteString (ByteString)
+import qualified Data.ByteString.Lazy as L
 import Database.Persist.Quasi
 import Data.Typeable (Typeable)
 import Data.Time

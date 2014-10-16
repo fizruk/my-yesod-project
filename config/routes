@@ -12,3 +12,5 @@
 /task/#TaskId/submit SubmitR POST
 /submission/#SubmissionId TaskSubmissionR GET
 /test/login TestLoginR POST
+/course/new NewCourseR POST
+/course/#CourseId/update UpdateCourseR POST

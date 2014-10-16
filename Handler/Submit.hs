@@ -4,10 +4,14 @@ module Handler.Submit where
 import Import
 import Data.Time
 
+import qualified Data.ByteString.Lazy as L
 import Data.Text (Text)
 import qualified Data.Text as Text
 
-import Data.Yaml
+import Data.Aeson
+import qualified Data.Yaml as Yaml
+
+import Data.Maybe
 
 import Control.Monad
 import System.Exit
@@ -53,22 +57,31 @@ setSubmissionStatus id status = runDB $ do
   when (currentStatus < status) $ do
     updateWhere [SubmissionId ==. id] [SubmissionStatus =. status]
 
-checkSubmission :: SubmissionId -> Submission -> FilePath -> Handler ()
-checkSubmission submissionId Submission{..} submitFile = do
+getSectionConfig :: Maybe SectionId -> Handler (ConfigWithOptions TrassConfig)
+getSectionConfig Nothing = return mempty
+getSectionConfig (Just sectionId) = do
+  section <- runDB $ get404 sectionId
+  case sectionConfig section of
+    Nothing   -> getSectionConfig (sectionParent section)
+    Just cfg  -> return . fromMaybe mempty . decodeStrict $ cfg
+
+checkSubmission :: SubmissionId -> ConfigWithOptions TrassConfig -> FilePath -> FilePath -> Handler ()
+checkSubmission submissionId sectionCfg taskPath submitFile = do
   -- runInnerHandler <- handlerToIO
   -- let checkpoint = runInnerHandler . setSubmissionStatus submissionId
 
+  cfg <- getTrassConfig
   liftIO $ do
-    Just cfg     <- decodeFile "/home/fizruk/trass-lxc/examples/.trass.yml"
-    Just section <- decodeFile "/home/fizruk/trass-lxc/examples/.section.yml"
-    let Right c = applyConfiguration cfg section
-    submit (Container "test-1" Nothing) submitFile ["/home/fizruk/trass-lxc/examples/common_task/", "/home/fizruk/trass-lxc/examples/task-1/"] c
+    let Right c = applyConfiguration cfg sectionCfg
+    submit (Container "test-1" Nothing) submitFile [taskPath] c
 
   return ()
 
 postSubmitR :: TaskId -> Handler Value
 postSubmitR taskId = do
-  authId  <- requireAuthId
+  authId      <- requireAuthId
+  task        <- runDB $ get404 taskId
+  sectionCfg  <- getSectionConfig (Just $ taskSection task)
   mfile   <- lookupFile "filedata"
   case mfile of
     Nothing -> invalidArgs ["filedata"]
@@ -81,7 +94,7 @@ postSubmitR taskId = do
 
       forkHandler
         (\_ -> setSubmissionStatus submissionId SubmissionAborted)
-        (checkSubmission submissionId submission submitFile)
+        (checkSubmission submissionId sectionCfg (taskPath task) submitFile)
 
       returnJson $ submissionId
 
