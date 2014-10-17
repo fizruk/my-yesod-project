@@ -22,8 +22,8 @@ getSectionR sectionId = do
   parent  <- case sectionParent section of
                Nothing       -> return Nothing
                Just parentId -> runDB $ get parentId
-  tasks       <- runDB $ selectList [ TaskSection   ==. sectionId ] []
-  subsections <- runDB $ selectList [ SectionParent ==. Just sectionId ] []
+  tasks       <- runDB $ selectList [ TaskSection   ==. sectionId ]       [ Asc TaskTitle ]
+  subsections <- runDB $ selectList [ SectionParent ==. Just sectionId ]  [ Asc SectionTitle ]
   selectRep $ do
     provideRep $ defaultLayout $ toWidget
       [hamlet|
@@ -41,11 +41,13 @@ getSectionR sectionId = do
 
         $forall Entity subsectionId subsection <- subsections
           <a href=@{SectionR subsectionId}> #{sectionTitle subsection}
+          <br>
 
         <hr>
 
         $forall Entity taskId task <- tasks
           <a href=@{TaskR taskId}> #{taskTitle task}
+          <br>
 
         $maybe overview <- sectionOverview section
           <p> #{renderMarkdown overview}
