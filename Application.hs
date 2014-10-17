@@ -38,6 +38,7 @@ import Handler.NewCourse
 import Handler.UpdateCourse
 import Handler.Section
 import Handler.Task
+import Handler.Submissions
 
 -- This line actually creates our YesodDispatch instance. It is the second half
 -- of the call to mkYesodData which occurs in Foundation.hs. Please see the

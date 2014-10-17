@@ -33,6 +33,7 @@ library
                      Handler.UpdateCourse
                      Handler.Section
                      Handler.Task
+                     Handler.Submissions
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
