@@ -20,7 +20,7 @@ getSectionR :: SectionId -> Handler TypedContent
 getSectionR sectionId = do
   section <- runDB $ get404 sectionId
   selectRep $ do
-    provideRep $ return
+    provideRep $ defaultLayout $ toWidget
       [shamlet|
         $maybe overview <- sectionOverview section
           <p> #{renderMarkdown overview}

@@ -82,12 +82,12 @@ postSubmitR taskId = do
   authId      <- requireAuthId
   task        <- runDB $ get404 taskId
   sectionCfg  <- getSectionConfig (Just $ taskSection task)
-  mfile   <- lookupFile "filedata"
+  mfile       <- lookupFile "filedata"
   case mfile of
     Nothing -> invalidArgs ["filedata"]
     Just fileInfo -> do
       let payload    = SubmissionPayload authId taskId
-          submitFile = "/home/fizruk/temp/submission.payload"
+          submitFile = "/home/fizruk/temp/submission.payload" -- TODO: withTempFile
       liftIO $ fileMove fileInfo submitFile
       submission    <- createSubmission payload
       submissionId  <- runDB $ insert submission

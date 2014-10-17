@@ -15,3 +15,4 @@
 /course/new NewCourseR POST
 /course/#CourseId/update UpdateCourseR POST
 /section/#SectionId SectionR GET
+/task/#TaskId TaskR GET POST
